@@ -1,0 +1,104 @@
+VERSION=1.2.18
+TC_VERSION=9.0.12
+
+# find java_home
+JAVA=`which java`
+JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
+JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
+JAVA_HOME=`echo "${JAVA}" | sed 's:jre: :' | awk ' { print $1 } '`
+ENTROPY=`cat /proc/sys/kernel/random/entropy_avail`
+if [ $ENTROPY -lt 3000 ]
+then
+  echo "This box can't do ssl tests... ${ENTROPY} is NOT enough"
+  exit 1
+fi
+
+echo "Using: $JAVA_HOME"
+
+# Stop running tomcat...
+if [ -d apache-tomcat-${TC_VERSION} ]
+then
+  apache-tomcat-${TC_VERSION}/bin/shutdown.sh
+  sleep 10
+fi
+
+rm -rf tomcat-native-${VERSION}
+rm -f tomcat-native-*
+wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+tar xvf tomcat-native-${VERSION}-src.tar.gz
+(cd tomcat-native-${VERSION}-src/native
+ ./configure --with-java-home=${JAVA_HOME}
+ make
+)
+
+if [ ! -d apache-tomcat-${TC_VERSION} ]
+then
+  if [ ! -f apache-tomcat-${TC_VERSION}.tar.gz ]
+  then
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v9.0.12/bin/apache-tomcat-${TC_VERSION}.tar.gz
+  fi
+  tar xvf apache-tomcat-${TC_VERSION}.tar.gz
+fi
+
+rm -f apache-tomcat-${TC_VERSION}/bin/setenv.sh
+echo "export LD_LIBRARY_PATH=`pwd`/tomcat-native-${VERSION}-src/native/.libs" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+chmod a+x apache-tomcat-${TC_VERSION}/bin/setenv.sh
+
+# Arrange the server.xml to create the connector to test
+sed -i '/8080/i \
+    \<Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"\
+               maxThreads="150" SSLEnabled="true"\>\
+        \<SSLHostConfig\>\
+            \<Certificate certificateKeyFile="conf/newkey.pem"\
+                         certificateFile="conf/newcert.pem"\
+                         type="RSA" /\>\
+        \</SSLHostConfig\>\
+    \</Connector\>\
+\
+    <Connector port="8444" protocol="org.apache.coyote.http11.Http11NioProtocol"\
+               maxThreads="150" SSLEnabled="true">\
+        \<SSLHostConfig\>\
+            \<Certificate certificateKeyFile="conf/newkey.pem"\
+                         certificateFile="conf/newcert.pem"\
+                         type="RSA" /\>\
+        \</SSLHostConfig\>\
+    \</Connector\>\
+' apache-tomcat-${TC_VERSION}/conf/server.xml
+
+# copy the certificates/keys
+cp newkey.pem apache-tomcat-${TC_VERSION}/conf/newkey.pem
+cp newcert.pem apache-tomcat-${TC_VERSION}/conf/newcert.pem
+
+apache-tomcat-${TC_VERSION}/bin/startup.sh
+sleep 10
+
+# check 8080 (tomcat started?)
+curl -v  http://localhost:8080/toto
+if [ $? -ne 0 ]
+then
+  echo "curl http://localhost:8080/toto failed"
+  exit 1
+fi
+
+# check tc-native start message
+grep ${VERSION} apache-tomcat-${TC_VERSION}/logs/catalina.out
+if [ $? -ne 0 ]
+then
+  echo "can't ${VERSION} in logs/catalina.out!!!"
+  exit 1
+fi
+
+# check the apr and nio connectors
+curl -v --cacert cacert.pem https://localhost:8443/toto
+if [ $? -ne 0 ]
+then
+  echo "apr connector failed"
+  exit 1
+fi
+
+curl -v --cacert cacert.pem https://localhost:8444/toto
+if [ $? -ne 0 ]
+then
+  echo "nio connector failed"
+  exit 1
+fi
