@@ -1,5 +1,5 @@
-VERSION=1.2.18
-TC_VERSION=9.0.12
+VERSION=1.2.19
+TC_VERSION=9.0.13
 
 # find java_home
 JAVA=`which java`
@@ -35,7 +35,7 @@ if [ ! -d apache-tomcat-${TC_VERSION} ]
 then
   if [ ! -f apache-tomcat-${TC_VERSION}.tar.gz ]
   then
-    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v9.0.12/bin/apache-tomcat-${TC_VERSION}.tar.gz
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
   fi
   tar xvf apache-tomcat-${TC_VERSION}.tar.gz
 fi
