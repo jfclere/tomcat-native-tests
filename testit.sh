@@ -1,5 +1,5 @@
-VERSION=1.2.19
-TC_VERSION=9.0.13
+VERSION=1.2.21
+TC_VERSION=9.0.21
 
 # find java_home
 JAVA=`which java`
@@ -25,6 +25,13 @@ fi
 rm -rf tomcat-native-${VERSION}
 rm -f tomcat-native-*
 wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+if [ $? -ne 0 ]; then
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+    if [ $? -ne 0 ]; then
+      echo "Can't find tomcat-native: ${VERSION}"
+      exit 1
+    fi 
+fi
 tar xvf tomcat-native-${VERSION}-src.tar.gz
 (cd tomcat-native-${VERSION}-src/native
  ./configure --with-java-home=${JAVA_HOME}
@@ -36,6 +43,13 @@ then
   if [ ! -f apache-tomcat-${TC_VERSION}.tar.gz ]
   then
     wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
+    if [ $? -ne 0 ]; then
+      wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-9/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
+      if [ $? -ne 0 ]; then
+        echo "Can't find tomcat: ${TC_VERSION}"
+        exit 1
+      fi
+    fi 
   fi
   tar xvf apache-tomcat-${TC_VERSION}.tar.gz
 fi
@@ -102,3 +116,5 @@ then
   echo "nio connector failed"
   exit 1
 fi
+echo ""
+echo "DONE: All OK"
