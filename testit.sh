@@ -1,5 +1,5 @@
 VERSION=1.2.23
-TC_VERSION=9.0.29
+TC_VERSION=9.0.30
 
 # find java_home
 JAVA=`which java`
@@ -11,8 +11,7 @@ echo "${JAVA}" | grep jre
 if [ $? -eq 0 ]; then
   JAVA_HOME=`echo "${JAVA}" | sed 's:jre: :' | awk ' { print $1 } '`
 else
-  JAVA_DIR=`echo "${JAVA}" | sed 's:bin: :' | awk ' { print $1 } '`
-  JAVA_HOME=`ls -l ${JAVA} | awk '{ print $11 }'`
+  JAVA_HOME=`echo "${JAVA}" | sed 's:bin: :' | awk ' { print $1 } '`
 fi
 ENTROPY=`cat /proc/sys/kernel/random/entropy_avail`
 if [ $ENTROPY -lt 3000 ]
