@@ -1,5 +1,5 @@
-VERSION=1.2.23
-TC_VERSION=9.0.32
+VERSION=1.2.26
+TC_VERSION=9.0.43
 
 # find java_home
 JAVA=`which java`
