@@ -42,8 +42,12 @@ fi
 tar xvf tomcat-native-${VERSION}-src.tar.gz
 (cd tomcat-native-${VERSION}-src/native
  ./configure --with-java-home=${JAVA_HOME}
+ if [ $? -ne 0 ]; then
+   echo "Can't configure tomcat-native: ${VERSION}"
+   exit 1
+ fi 
  make
-)
+) || exit 1
 
 if [ ! -d apache-tomcat-${TC_VERSION} ]
 then
