@@ -129,6 +129,8 @@ then
 fi
 
 # now testing the sources...
+rm -rf apache-tomcat-${TC_VERSION}-src
+rm -f apache-tomcat-*
 wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
 if [ $? -ne 0 ]; then
     wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
