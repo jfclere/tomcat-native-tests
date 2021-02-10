@@ -127,5 +127,33 @@ then
   echo "nio connector failed"
   exit 1
 fi
+
+# now testing the sources...
+wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+if [ $? -ne 0 ]; then
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+    if [ $? -ne 0 ]; then
+      echo "Can't find tomcat: ${TC_VERSION}"
+      exit 1
+    fi
+fi
+tar xvf apache-tomcat-${TC_VERSION}-src.tar.gz
+(cd apache-tomcat-${TC_VERSION}-src
+ant
+if [ $? -ne 0 ]; then
+  echo "Build failed"
+  exit 1
+fi
+# copy the .so in bin
+cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin
+# Exclude tests that depend too much on openssl versions.
+echo "test.exclude=**/TestCipher.java,**/TestOpenSSLCipherConfigurationParser.java" >> build.properties.default
+ant test
+if [ $? -ne 0 ]; then
+  echo "Test failed"
+  exit 1
+fi
+) || exit 1
+
 echo ""
 echo "DONE: All OK"
