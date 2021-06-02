@@ -1,5 +1,6 @@
 VERSION=1.2.28
-TC_VERSION=9.0.46
+TC_VERSION=10.0.6
+TC_MAJOR=10
 
 # find java_home
 JAVA=`which java`
@@ -53,9 +54,9 @@ if [ ! -d apache-tomcat-${TC_VERSION} ]
 then
   if [ ! -f apache-tomcat-${TC_VERSION}.tar.gz ]
   then
-    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
     if [ $? -ne 0 ]; then
-      wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-9/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
+      wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
       if [ $? -ne 0 ]; then
         echo "Can't find tomcat: ${TC_VERSION}"
         exit 1
@@ -131,9 +132,9 @@ fi
 # now testing the sources...
 rm -rf apache-tomcat-${TC_VERSION}-src
 rm -f apache-tomcat-*
-wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
 if [ $? -ne 0 ]; then
-    wget http://mirror.easyname.ch/apache/tomcat/tomcat-9/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+    wget http://mirror.easyname.ch/apache/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
     if [ $? -ne 0 ]; then
       echo "Can't find tomcat: ${TC_VERSION}"
       exit 1
