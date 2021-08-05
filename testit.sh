@@ -1,11 +1,11 @@
 VERSION=1.2.30
-TC_VERSION=10.1.0-M2
-TC_MAJOR=10
-#TC_VERSION=9.0.50
-#TC_MAJOR=9
+#TC_VERSION=10.1.0-M2
+#TC_MAJOR=10
+TC_VERSION=9.0.52
+TC_MAJOR=9
 
 # find java_home (looking for alternatives)
-# PATH=/home/jfclere/TMP/jdk8u292-b10/bin:$PATH
+PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
 echo $JAVA | grep alternatives
