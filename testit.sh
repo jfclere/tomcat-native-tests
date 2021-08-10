@@ -1,11 +1,17 @@
-VERSION=1.2.30
+VERSION=/opt/rh/jws5/root/usr/lib64
 #TC_VERSION=10.1.0-M2
 #TC_MAJOR=10
 TC_VERSION=9.0.52
 TC_MAJOR=9
 
-# find java_home (looking for alternatives)
+# ant for rhel9
+ANT_HOME=/home/jfclere/apache-ant-1.10.11
+
+# for adoptium
 PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
+# for openjdk8
+PATH=/usr/lib/jvm/java-1.8.0:$PATH
+# find java_home (looking for alternatives)
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
 echo $JAVA | grep alternatives
@@ -42,26 +48,47 @@ then
   sleep 10
 fi
 
-rm -rf tomcat-native-${VERSION}
-rm -f tomcat-native-*
-wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
-if [ $? -ne 0 ]; then
-    wget http://mirror.easyname.ch/apache/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
-    if [ $? -ne 0 ]; then
-      echo "Can't find tomcat-native: ${VERSION}"
-      exit 1
-    fi 
-fi
-tar xvf tomcat-native-${VERSION}-src.tar.gz
-(cd tomcat-native-${VERSION}-src/native
- ./configure --with-java-home=${JAVA_HOME}
- if [ $? -ne 0 ]; then
-   echo "Can't configure tomcat-native: ${VERSION}"
-   exit 1
- fi 
- make
-) || exit 1
+# build tomcat-native is required.
+function buildnative
+{
+  rm -rf tomcat-native-${VERSION}
+  rm -f tomcat-native-*
+  wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+  if [ $? -ne 0 ]; then
+      wget http://mirror.easyname.ch/apache/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+      if [ $? -ne 0 ]; then
+        echo "Can't find tomcat-native: ${VERSION}"
+        exit 1
+      fi 
+  fi
+  tar xvf tomcat-native-${VERSION}-src.tar.gz
+  (cd tomcat-native-${VERSION}-src/native
+   ./configure --with-java-home=${JAVA_HOME}
+   if [ $? -ne 0 ]; then
+     echo "Can't configure tomcat-native: ${VERSION}"
+     exit 1
+   fi 
+   make
+  ) || exit 1
+}
 
+case $VERSION in
+  1.2.*)
+    buildnative || exit 1
+    ;;
+  main)
+    echo "building ${VERSION} not supported"
+    exit 1
+    ;;
+  /*)
+    echo "Using already build tc-native from ${VERSION}"
+    ;;
+  *)
+    echo "building ${VERSION} not supported"
+    exit 1
+    ;;
+esac
+  
 if [ ! -d apache-tomcat-${TC_VERSION} ]
 then
   if [ ! -f apache-tomcat-${TC_VERSION}.tar.gz ]
@@ -79,7 +106,14 @@ then
 fi
 
 rm -f apache-tomcat-${TC_VERSION}/bin/setenv.sh
-echo "export LD_LIBRARY_PATH=`pwd`/tomcat-native-${VERSION}-src/native/.libs" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+case $VERSION in
+  1.2.*)
+    echo "export LD_LIBRARY_PATH=`pwd`/tomcat-native-${VERSION}-src/native/.libs" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+    ;;
+  *)
+    echo "export LD_LIBRARY_PATH=$VERSION" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+    ;;
+esac
 chmod a+x apache-tomcat-${TC_VERSION}/bin/setenv.sh
 
 # Arrange the server.xml to create the connector to test
@@ -119,10 +153,18 @@ then
 fi
 
 # check tc-native start message
-grep ${VERSION} apache-tomcat-${TC_VERSION}/logs/catalina.out
+case $VERSION in
+  1.2.*)
+    STRINGVERSION=$VERSION
+    ;;
+  *)
+    STRINGVERSION="1.2."
+    ;;
+esac
+grep ${STRINGVERSION} apache-tomcat-${TC_VERSION}/logs/catalina.out
 if [ $? -ne 0 ]
 then
-  echo "can't ${VERSION} in logs/catalina.out!!!"
+  echo "can't ${STRINGVERSION} in logs/catalina.out!!!"
   exit 1
 fi
 
@@ -160,10 +202,17 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 # copy the .so in bin
-cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin
+case $VERSION in
+  1.2.*)
+    cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin
+    ;;
+  *)
+    cp ${VERSION}/*.so output/build/bin
+    ;;
+esac
 # Exclude tests that depend too much on openssl versions.
 echo "test.exclude=**/TestCipher.java,**/TestOpenSSLCipherConfigurationParser.java" >> build.properties.default
-ant test
+~/apache-ant-1.10.11/bin/ant test
 if [ $? -ne 0 ]; then
   echo "Test failed"
   exit 1
