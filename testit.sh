@@ -1,16 +1,19 @@
-VERSION=/opt/rh/jws5/root/usr/lib64
+#VERSION=/opt/rh/jws5/root/usr/lib64
+VERSION=1.2.30
 #TC_VERSION=10.1.0-M2
 #TC_MAJOR=10
-TC_VERSION=9.0.52
-TC_MAJOR=9
+#TC_VERSION=9.0.52
+#TC_MAJOR=9
+TC_VERSION=8.5.70
+TC_MAJOR=8
 
 # ant for rhel9
 ANT_HOME=/home/jfclere/apache-ant-1.10.11
 
 # for adoptium
-PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
+#PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
 # for openjdk8
-PATH=/usr/lib/jvm/java-1.8.0:$PATH
+PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
 # find java_home (looking for alternatives)
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
@@ -205,14 +208,18 @@ fi
 case $VERSION in
   1.2.*)
     cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin
+    mkdir output/build/bin/native
+    cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin/native
     ;;
   *)
     cp ${VERSION}/*.so output/build/bin
+    mkdir output/build/bin/native
+    cp ${VERSION}/*.so output/build/bin/native
     ;;
 esac
 # Exclude tests that depend too much on openssl versions.
 echo "test.exclude=**/TestCipher.java,**/TestOpenSSLCipherConfigurationParser.java" >> build.properties.default
-~/apache-ant-1.10.11/bin/ant test
+${ANT_HOME}/bin/ant test
 if [ $? -ne 0 ]; then
   echo "Test failed"
   exit 1
