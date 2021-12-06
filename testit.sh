@@ -1,9 +1,9 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 VERSION=1.2.31
-#TC_VERSION=10.1.0-M2
-#TC_MAJOR=10
-TC_VERSION=9.0.53
-TC_MAJOR=9
+TC_VERSION=10.1.0-M5
+TC_MAJOR=10
+#TC_VERSION=9.0.53
+#TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -12,8 +12,9 @@ ANT_HOME=/home/jfclere/apache-ant-1.10.11
 
 # for adoptium
 #PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
+PATH=/home/jfclere/TMP/jdk-11.0.12+7/bin:$PATH
 # for openjdk8
-PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
+#PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
 # find java_home (looking for alternatives)
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
@@ -120,7 +121,9 @@ esac
 chmod a+x apache-tomcat-${TC_VERSION}/bin/setenv.sh
 
 # Arrange the server.xml to create the connector to test
-sed -i '/8080/i \
+if [ $TC_MAJOR != 10 ]; then
+  echo "Tomcat 9 or 8"
+  sed -i '/8080/i \
     \<Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"\
                maxThreads="150" SSLEnabled="true"\>\
         \<SSLHostConfig\>\
@@ -139,6 +142,19 @@ sed -i '/8080/i \
         \</SSLHostConfig\>\
     \</Connector\>\
 ' apache-tomcat-${TC_VERSION}/conf/server.xml
+else
+  echo "Tomcat 10.1"
+  sed -i '/8080/i \
+    <Connector port="8444" protocol="org.apache.coyote.http11.Http11NioProtocol"\
+               maxThreads="150" SSLEnabled="true">\
+        \<SSLHostConfig\>\
+            \<Certificate certificateKeyFile="conf/newkey.pem"\
+                         certificateFile="conf/newcert.pem"\
+                         type="RSA" /\>\
+        \</SSLHostConfig\>\
+    \</Connector\>\
+' apache-tomcat-${TC_VERSION}/conf/server.xml
+fi
 
 # copy the certificates/keys
 cp newkey.pem apache-tomcat-${TC_VERSION}/conf/newkey.pem
@@ -175,8 +191,10 @@ fi
 curl -v --cacert cacert.pem https://localhost:8443/toto
 if [ $? -ne 0 ]
 then
-  echo "apr connector failed"
-  exit 1
+  if [ $TC_MAJOR != 10 ]; then
+    echo "apr connector failed"
+    exit 1
+  fi
 fi
 
 curl -v --cacert cacert.pem https://localhost:8444/toto
