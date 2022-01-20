@@ -1,9 +1,9 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 VERSION=1.2.31
-TC_VERSION=10.1.0-M5
-TC_MAJOR=10
-#TC_VERSION=9.0.53
-#TC_MAJOR=9
+#TC_VERSION=10.1.0-M5
+#TC_MAJOR=10
+TC_VERSION=9.0.56
+TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -11,8 +11,8 @@ TC_MAJOR=10
 ANT_HOME=/home/jfclere/apache-ant-1.10.11
 
 # for adoptium
-#PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
-PATH=/home/jfclere/TMP/jdk-11.0.12+7/bin:$PATH
+PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
+#PATH=/home/jfclere/TMP/jdk-11.0.12+7/bin:$PATH
 # for openjdk8
 #PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
 # find java_home (looking for alternatives)
