@@ -1,9 +1,9 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 VERSION=1.2.31
-TC_VERSION=10.1.0-M10
-TC_MAJOR=10
-#TC_VERSION=9.0.56
-#TC_MAJOR=9
+#TC_VERSION=10.1.0-M10
+#TC_MAJOR=10
+TC_VERSION=9.0.59
+TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -11,7 +11,7 @@ TC_MAJOR=10
 ANT_HOME=/home/jfclere/apache-ant-1.10.11
 
 # for panama
-PATH=/home/jfclere/JAVA/openjdk-17-panama+3-167_linux-x64_bin/jdk-17/bin:$PATH
+#PATH=/home/jfclere/JAVA/openjdk-17-panama+3-167_linux-x64_bin/jdk-17/bin:$PATH
 
 # for adoptium
 #PATH=/home/jfclere/TMP/jdk8u302-b08/bin:$PATH
