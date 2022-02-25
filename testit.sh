@@ -1,6 +1,6 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 VERSION=1.2.31
-#TC_VERSION=10.1.0-M10
+#TC_VERSION=10.1.0-M11
 #TC_MAJOR=10
 TC_VERSION=9.0.59
 TC_MAJOR=9
@@ -20,6 +20,7 @@ ANT_HOME=/home/jfclere/apache-ant-1.10.11
 #PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
 # find java_home (looking for alternatives)
 # 2022/01/20  openjdk version "11.0.13" 2021-10-19
+JAVA_VERSION=8
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
 echo $JAVA | grep alternatives
@@ -317,6 +318,15 @@ case $VERSION in
 esac
 # Exclude tests that depend too much on openssl versions.
 echo "test.exclude=**/TestCipher.java,**/TestOpenSSLCipherConfigurationParser.java" >> build.properties.default
+if [ $JAVA_VERSION == 8 ]; then
+cat << EOF > build.properties
+opens.javalang=-Dnop
+opens.javaio=-Dnop
+opens.sunrmi=-Dnop
+opens.javautil=-Dnop
+opens.javautilconcurrent=-Dnop 
+EOF
+fi
 ${ANT_HOME}/bin/ant test
 if [ $? -ne 0 ]; then
   echo "Test failed"
