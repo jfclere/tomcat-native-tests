@@ -1,6 +1,6 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
-VERSION=1.2.35
-#VERSION=2.0.1
+#VERSION=1.2.35
+VERSION=2.0.1
 TC_VERSION=10.1.0-M17
 TC_MAJOR=10
 #TC_VERSION=9.0.64
@@ -98,6 +98,9 @@ function buildnative
 
 case $VERSION in
   1.2.*)
+    buildnative || exit 1
+    ;;
+  2.0.*)
     buildnative || exit 1
     ;;
   main)
