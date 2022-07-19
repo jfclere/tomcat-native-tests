@@ -1,9 +1,10 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
-VERSION=1.2.33
-#TC_VERSION=10.1.0-M11
-#TC_MAJOR=10
-TC_VERSION=9.0.64
-TC_MAJOR=9
+VERSION=1.2.35
+#VERSION=2.0.1
+TC_VERSION=10.1.0-M17
+TC_MAJOR=10
+#TC_VERSION=9.0.64
+#TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -59,7 +60,7 @@ ENTROPY=`cat /proc/sys/kernel/random/entropy_avail`
 if [ $ENTROPY -lt 3000 ]
 then
   echo "This box can't do ssl tests... ${ENTROPY} is NOT enough"
-  exit 1
+  #exit 1
 fi
 
 echo "Using: $JAVA_HOME"
