@@ -45,16 +45,36 @@ fi
 echo "Using: JAVA_HOME ${JAVA_HOME}"
 
 # check for panama
-USE_PANAMA=false
-java -version 2>&1 | grep panama
-if [ $? -eq 0 ]; then
-  # don't build tomcat-native
-  VERSION=/panama
+if [ "x$USE_PANAMA" == "x" ]; then
+  USE_PANAMA=false
+else
   USE_PANAMA=true
 fi
 
 if $USE_PANAMA; then
+  echo "Use panama!"
+  java -fullversion 2>&1 | grep "17.0."
+  if [ $? -eq 0 ]; then
+    PANAMA=openssl-java17
+    VERSION=/panama
+  fi
+  java -fullversion 2>&1 | grep "21-ea"
+  if [ $? -eq 0 ]; then
+    PANAMA=openssl-java21
+    VERSION=/panama
+  fi
+  if [ "x$PANAMA" == "x" ]; then
+    USE_PANAMA=false
+    echo "Can't find the java version"
+    exit 1
+  fi
+else
+  echo "not using panama!"
+fi
+
+if $USE_PANAMA; then
   echo "Using PANAMA!"
+  echo "openssl module: $PANAMA"
 fi
 
 ENTROPY=`cat /proc/sys/kernel/random/entropy_avail`
@@ -97,6 +117,19 @@ function buildnative
   ) || exit 1
 }
 
+# build panama is required.
+# Only tc-11.x has the sources so use $HOME/tomcat for the moment.
+function buildpanama
+{
+  (cd $HOME/tomcat/modules/$PANAMA
+   mvn install
+   if [ $? -ne 0 ]; then
+     echo "Can't build $HOME/tomcat/$PANAMA"
+     exit 1
+   fi
+  ) || exit 1
+}
+
 case $VERSION in
   1.2.*)
     buildnative || exit 1
@@ -107,6 +140,9 @@ case $VERSION in
   main)
     echo "building ${VERSION} not supported"
     exit 1
+    ;;
+  /panama)
+    buildpanama || exit 1
     ;;
   /*)
     echo "Using already build tc-native from ${VERSION}"
@@ -139,30 +175,6 @@ then
   tar xvf apache-tomcat-${TC_VERSION}.tar.gz
 fi
 
-# now building panama
-if $USE_PANAMA; then
-  if [ -d $tomcat-${TC_VERSION} ]; then
-    wget https://github.com/apache/tomcat/archive/refs/tags/${TC_VERSION}.tar.gz
-    tar xvf ${TC_VERSION}.tar.gz
-  fi
-  cd tomcat-${TC_VERSION}/modules/openssl-java17
-  #jextract @openssl-tomcat.conf openssl.h
-  #if [ $? -ne 0 ]; then
-  #  echo "pnanama: jextract failed"
-  #  exit 1
-  #fi
-  export JAVA_HOME
-  mvn install
-  if [ $? -ne 0 ]; then
-    echo "pnanama: mvn install failed"
-    exit 1
-  fi
-  # tomcat-coyote-openssl-java17-0.1-SNAPSHOT.jar
-  OPENSSL_JAR=`ls target/tomcat-coyote-openssl-java17*`
-  echo "panama: openssl jar: $OPENSSL_JAR"
-  cd ../../..
-fi
-
 rm -f apache-tomcat-${TC_VERSION}/bin/setenv.sh
 case $VERSION in
   1.2.*)
@@ -172,9 +184,14 @@ case $VERSION in
     echo "export LD_LIBRARY_PATH=`pwd`/tomcat-native-${VERSION}-src/native/.libs" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
     ;;
   /panama)
-    echo "Using openssl-java17 / panama"
-    echo "export JAVA_OPTS=\"--enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.foreign\"" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
-    cp tomcat-${TC_VERSION}/modules/openssl-java17/${OPENSSL_JAR} apache-tomcat-${TC_VERSION}/lib
+    echo "Using $PANAMA"
+    if [ $PANAMA == openssl-java17 ]; then
+      echo "export JAVA_OPTS=\"--enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.foreign\"" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+    else
+      # JDK21: export JAVA_OPTS="--enable-preview --enable-native-access=ALL-UNNAMED"
+      echo "export JAVA_OPTS=\"--enable-preview --enable-native-access=ALL-UNNAMED\"" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
+    fi
+    cp $HOME/tomcat/modules/$PANAMA/target/*.jar apache-tomcat-${TC_VERSION}/lib
     ;;
   *)
     echo "export LD_LIBRARY_PATH=$VERSION" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
@@ -258,7 +275,7 @@ case $VERSION in
     STRINGVERSION=$VERSION
     ;;
   /panama)
-    echo "Using openssl-java17 / panama"
+    echo "Using $PANAMA"
     STRINGVERSION="panama"
     ;;
   *)
@@ -322,9 +339,16 @@ case $VERSION in
     cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin/native
     ;;
   /panama)
-    echo "Using openssl-java17 / panama"
-    mkdir -p $HOME/tomcat-build-libs/tomcat-coyote-openssl-java17-0.1
-    cp tomcat-${TC_VERSION}/modules/openssl-java17/${OPENSSL_JAR} $HOME/tomcat-build-libs/tomcat-coyote-openssl-java17-0.1/tomcat-coyote-openssl-java17-0.1.jar
+    # Default values are for JDK17... (build.properties.default)
+    # ${base.path} is $HOME/tomcat-build-libs
+    # openssl-lib.home=${base.path}/tomcat-coyote-openssl-java17-${openssl-lib.version}
+    # openssl-lib.jar=${openssl-lib.home}/tomcat-coyote-openssl-java17-${openssl-lib.version}.jar
+    # openssl-lib.loc=${base-maven.loc}/org/apache/tomcat/tomcat-coyote-openssl-java17/${openssl-lib.version}/tomcat-coyote-openssl-java17-${openssl-lib.version}.jar
+    echo "Using $PANAMA"
+    rm -rf $HOME/tomcat-build-libs
+    mkdir $HOME/tomcat-build-libs
+    cp $HOME/tomcat/modules/$PANAMA/target/*jar $HOME/tomcat-build-libs/tomcat-coyote-openssl-java.jar
+    sed -i "/openssl-lib.loc=/copenssl-lib.loc=$HOME/tomcat-build-libs/tomcat-coyote-openssl-java.jar"  build.properties.default
     ;;
   *)
     cp ${VERSION}/*.so output/build/bin
