@@ -1,10 +1,10 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
-VERSION=1.2.39
-#VERSION=2.0.6
-#TC_VERSION=10.1.14
-#TC_MAJOR=10
-TC_VERSION=9.0.83
-TC_MAJOR=9
+#VERSION=1.2.39
+VERSION=2.0.6
+TC_VERSION=11.0.0-M14
+TC_MAJOR=11
+#TC_VERSION=9.0.83
+#TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -40,6 +40,13 @@ else
   # we have a probably a PATH for example /home/jfclere/TMP/jdk8u292-b10/bin
   JAVA=`which java`
   JAVA_HOME=`echo "${JAVA}" | sed 's:/bin/: :' | awk ' { print $1 } '`
+fi
+
+# Use 21 for tomcat11
+# /usr/lib/jvm/java-21-openjdk
+if [ $TC_MAJOR == 11 ]; then
+  export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+  export PATH=$JAVA_HOME/bin:$PATH
 fi
 echo "Using: JAVA_HOME ${JAVA_HOME}"
 
@@ -199,8 +206,8 @@ esac
 chmod a+x apache-tomcat-${TC_VERSION}/bin/setenv.sh
 
 # Arrange the server.xml to create the connector to test
-if [ $TC_MAJOR != 10 ]; then
-  echo "Tomcat 9 or 8"
+if [ $TC_MAJOR == 9 ]; then
+  echo "Tomcat 9"
   sed -i '/8080/i \
     \<Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"\
                maxThreads="150" SSLEnabled="true"\>\
@@ -221,7 +228,7 @@ if [ $TC_MAJOR != 10 ]; then
     \</Connector\>\
 ' apache-tomcat-${TC_VERSION}/conf/server.xml
 else
-  echo "Tomcat 10.1"
+  echo "Tomcat 10.1 or 11"
   if ${USE_PANAMA}; then
     sed -i '/8080/i \
     <Connector port="8444" protocol="HTTP/1.1"\
@@ -289,14 +296,12 @@ then
 fi
 
 # check the apr and nio connectors
-if [ $TC_MAJOR != 10 ]; then
+if [ $TC_MAJOR == 9 ]; then
   curl -v --cacert cacert.pem https://localhost:8443/toto
   if [ $? -ne 0 ]
   then
-    if [ $TC_MAJOR != 10 ]; then
-      echo "apr connector failed"
-      exit 1
-    fi
+    echo "apr connector failed"
+    exit 1
   fi
 fi
 
