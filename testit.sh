@@ -42,10 +42,12 @@ else
   JAVA_HOME=`echo "${JAVA}" | sed 's:/bin/: :' | awk ' { print $1 } '`
 fi
 
-# Use 21 for tomcat11
+# Use 21/22 for tomcat11
 # /usr/lib/jvm/java-21-openjdk
 if [ $TC_MAJOR == 11 ]; then
-  export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+  # export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+  # export PATH=$JAVA_HOME/bin:$PATH
+  export JAVA_HOME=/home/jfclere/JAVA/jdk-22
   export PATH=$JAVA_HOME/bin:$PATH
 fi
 echo "Using: JAVA_HOME ${JAVA_HOME}"
@@ -64,9 +66,14 @@ if $USE_PANAMA; then
     PANAMA=openssl-java17
     VERSION=/panama
   fi
-  java -fullversion 2>&1 | grep "21-ea"
+  java -fullversion 2>&1 | grep "21"
   if [ $? -eq 0 ]; then
     PANAMA=openssl-java21
+    VERSION=/panama
+  fi
+  java -fullversion 2>&1 | grep "22"
+  if [ $? -eq 0 ]; then
+    PANAMA=openssl-foreign
     VERSION=/panama
   fi
   if [ "x$PANAMA" == "x" ]; then
