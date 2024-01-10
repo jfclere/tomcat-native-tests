@@ -21,13 +21,15 @@ if [ ! -f cacerts.jks ]; then
 fi
 cp cacerts.jks $TOMCAT_HOME/conf
 cp $SERVLET_TCK_HOME/servlet-tck/bin/certificates/clientcert.jks $TOMCAT_HOME/conf
-sed -i 's:web.home=:web.home=$TOMCAT_HOME:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
+sed -i "s:web.home=:web.home=$TOMCAT_HOME:" $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:jakarta.servlet-api:servlet-api:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:jakarta.annotation-api:annotation-api:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:webServerHost=:webServerHost=localhost:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:webServerPort=:webServerPort=8080:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:securedWebServicePort=:securedWebServicePort=8443:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
 sed -i 's:domains/domain1/config:conf:' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
+
+echo "$SERVLET_TCK_HOME/servlet-tck/bin/ts.jte configured"
 
 # not sure it is usefull...
 #sed -i '/-Dbytecheck=true/a-Djava.endorsed.dirs=${ts.home}\/endorsedlib \\' $SERVLET_TCK_HOME/servlet-tck/bin/ts.jte
