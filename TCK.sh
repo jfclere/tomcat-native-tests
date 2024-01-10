@@ -1,5 +1,6 @@
-SERVLET_TCK_HOME=`pwd`/$$
 TOMCAT_VERSION=10.1.18
+TCK_VERSION=6.0.1
+SERVLET_TCK_HOME=`pwd`/$$
 TOMCAT_HOME=`pwd`/apache-tomcat-$TOMCAT_VERSION
 if [ ! -d $TOMCAT_HOME ]; then
   echo "No tomcat install to test"
@@ -17,10 +18,11 @@ if [ $? -eq 0 ]; then
 fi
 
 mkdir $SERVLET_TCK_HOME
-if [ ! -f servlet-tck-6.0.0.zip ]; then
-  wget https://download.eclipse.org/ee4j/jakartaee-tck/jakartaee10/promoted/epl/servlet-tck-6.0.0.zip
+if [ ! -f servlet-tck-$TCK_VERSION.zip ]; then
+  #wget https://download.eclipse.org/ee4j/jakartaee-tck/jakartaee10/promoted/epl/servlet-tck-$TCK_VERSION.zip
+  wget https://download.eclipse.org/jakartaee/servlet/6.0/jakarta-servlet-tck-$TCK_VERSION.zip
 fi
-(cd $SERVLET_TCK_HOME; unzip ../servlet-tck-6.0.0.zip)
+(cd $SERVLET_TCK_HOME; unzip ../jakarta-servlet-tck-$TCK_VERSION.zip)
 if [ ! -f cacerts.jks ]; then
   keytool -import -alias cts -file $SERVLET_TCK_HOME/servlet-tck/bin/certificates/cts_cert -storetype JKS -keystore cacerts.jks -storepass changeit -noprompt
 fi
