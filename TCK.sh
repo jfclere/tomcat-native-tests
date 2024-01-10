@@ -4,6 +4,11 @@ TOMCAT_HOME=`pwd`/apache-tomcat-$TOMCAT_VERSION
 if [ ! -d $TOMCAT_HOME ]; then
   echo "No tomcat install to test"
 fi
+if [ ! -d $TOMCAT_HOME/modules ]; then
+  mkdir $TOMCAT_HOME/modules
+  cp $TOMCAT_HOME/lib/servlet-api.jar $TOMCAT_HOME/modules
+  cp $TOMCAT_HOME/lib/annotations-api.jar $TOMCAT_HOME/modules
+fi
 
 # stop the tomcat
 ps -ef | grep java | grep $TOMCAT_VERSION
@@ -12,7 +17,7 @@ if [ $? -eq 0 ]; then
 fi
 
 mkdir $SERVLET_TCK_HOME
-if [ -f servlet-tck-6.0.0.zip]; then
+if [ ! -f servlet-tck-6.0.0.zip ]; then
   wget https://download.eclipse.org/ee4j/jakartaee-tck/jakartaee10/promoted/epl/servlet-tck-6.0.0.zip
 fi
 (cd $SERVLET_TCK_HOME; unzip ../servlet-tck-6.0.0.zip)
