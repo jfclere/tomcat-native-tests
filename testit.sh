@@ -1,12 +1,13 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 #VERSION=1.2.39
-VERSION=2.0.6
-TC_VERSION=10.1.18
-TC_MAJOR=10
+VERSION=1.3.0
+#VERSION=2.0.6
+#TC_VERSION=10.1.18
+#TC_MAJOR=10
 #TC_VERSION=11.0.0-M14
 #TC_MAJOR=11
-#TC_VERSION=9.0.85
-#TC_MAJOR=9
+TC_VERSION=9.0.86
+TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
 
@@ -146,7 +147,7 @@ function buildpanama
 }
 
 case $VERSION in
-  1.2.*)
+  1.*)
     buildnative || exit 1
     ;;
   2.0.*)
@@ -192,7 +193,7 @@ fi
 
 rm -f apache-tomcat-${TC_VERSION}/bin/setenv.sh
 case $VERSION in
-  1.2.*)
+  1.*)
     echo "export LD_LIBRARY_PATH=`pwd`/tomcat-native-${VERSION}-src/native/.libs" > apache-tomcat-${TC_VERSION}/bin/setenv.sh
     ;;
   2.0.*)
@@ -286,7 +287,7 @@ case $VERSION in
   2.0.*)
     STRINGVERSION=$VERSION
     ;;
-  1.2.*)
+  1.*)
     STRINGVERSION=$VERSION
     ;;
   /panama)
@@ -341,7 +342,7 @@ fi
 
 # copy the .so in bin
 case $VERSION in
-  1.2.*)
+  1.*)
     cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin
     mkdir output/build/bin/native
     cp ../tomcat-native-${VERSION}-src/native/.libs/*.so output/build/bin/native
