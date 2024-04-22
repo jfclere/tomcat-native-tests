@@ -1,4 +1,4 @@
-TOMCAT_VERSION=9.0.86
+TOMCAT_VERSION=10.1.19
 rm -rf ASF MY
 mkdir ASF
 mkdir MY
