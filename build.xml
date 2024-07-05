@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="version" default="version" basedir=".">
+  <target name="version">
+    <echo>
+      java-version: ${java.vm.version}
+    </echo>
+  </target>
+</project>

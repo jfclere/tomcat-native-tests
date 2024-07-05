@@ -1,12 +1,12 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
-VERSION=1.2.39
-#VERSION=1.3.0
+#VERSION=1.2.39
+VERSION=1.3.0
 #VERSION=2.0.7
 #TC_VERSION=10.1.23
 #TC_MAJOR=10
 #TC_VERSION=11.0.0-M14
 #TC_MAJOR=11
-TC_VERSION=9.0.89
+TC_VERSION=9.0.91
 TC_MAJOR=9
 #TC_VERSION=8.5.70
 #TC_MAJOR=8
@@ -112,7 +112,7 @@ fi
 # build tomcat-native is required.
 function buildnative
 {
-  rm -rf tomcat-native-${VERSION}
+  rm -rf tomcat-native-${VERSION}-src
   rm -f tomcat-native-*
   wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
   if [ $? -ne 0 ]; then
