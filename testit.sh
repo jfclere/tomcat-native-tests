@@ -1,15 +1,13 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 #VERSION=1.2.39
-VERSION=1.3.0
-#VERSION=2.0.7
+#VERSION=1.3.0
+VERSION=2.0.7
 #TC_VERSION=10.1.23
-#TC_MAJOR=10
-#TC_VERSION=11.0.0-M14
-#TC_MAJOR=11
-TC_VERSION=9.0.91
-TC_MAJOR=9
+TC_VERSION=11.0.0-M22
+#TC_VERSION=9.0.91
 #TC_VERSION=8.5.70
-#TC_MAJOR=8
+
+TC_MAJOR=`echo "$TC_VERSION"  | awk -F '.' '{print $1}'`
 
 # ant for rhel9
 ANT_HOME=/home/jfclere/apache-ant-1.10.11

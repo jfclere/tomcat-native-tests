@@ -1,11 +1,22 @@
-TOMCAT_VERSION=9.0.91
+TOMCAT_VERSION=11.0.0-M22
 rm -rf ASF MY
 mkdir ASF
 mkdir MY
 
+TOMCAT_MAJOR=`echo "$TOMCAT_VERSION"  | awk -F '.' '{print $1}'`
+
+# Use 21/22 for tomcat11
+# /usr/lib/jvm/java-21-openjdk
+if [ $TOMCAT_MAJOR == 11 ]; then
+  # export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+  # export PATH=$JAVA_HOME/bin:$PATH
+  # export JAVA_HOME=/home/jfclere/JAVA/jdk-22
+  export JAVA_HOME=/home/jfclere/JAVA/jdk-22.0.1
+  export PATH=$JAVA_HOME/bin:$PATH
+fi
+
 # check java version
 JAVA_VERSION=`java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}'`
-TOMCAT_MAJOR=`echo "$TOMCAT_VERSION"  | awk -F '.' '{print $1}'`
 JAVA_MAJOR=`echo "$JAVA_VERSION"  | awk -F '.' '{print $1}'`
 if [ $TOMCAT_MAJOR == "9" ]; then
   echo "tomcat 9!!!"
@@ -23,6 +34,15 @@ if [ $TOMCAT_MAJOR == "9" ]; then
     exit 1
   fi
 fi
+
+# Check build.properties.release
+# the JAVA version is there...
+JAVA_RELEASE_VERSION=`grep release-java-version apache-tomcat-${TOMCAT_VERSION}-src/build.properties.release | awk -F = '{ print $2 }'`
+if [ ${JAVA_RELEASE_VERSION} != ${JAVA_VERSION} ]; then
+  echo "JAVA_RELEASE_VERSION: $JAVA_RELEASE_VERSION"
+  echo "JAVA_VERSION: $JAVA_VERSION"
+fi
+# ./apache-tomcat-11.0.0-M22-src/build.properties.release
 
 (cd apache-tomcat-${TOMCAT_VERSION}-src; ant clean)
 (cd apache-tomcat-${TOMCAT_VERSION}-src; ant release)
