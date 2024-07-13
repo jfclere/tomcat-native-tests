@@ -2,8 +2,8 @@
 #VERSION=1.2.39
 #VERSION=1.3.0
 VERSION=2.0.7
-#TC_VERSION=10.1.23
-TC_VERSION=11.0.0-M22
+TC_VERSION=10.1.26
+#TC_VERSION=11.0.0-M22
 #TC_VERSION=9.0.91
 #TC_VERSION=8.5.70
 
@@ -180,7 +180,7 @@ then
         echo "trying: https://dlcdn.apache.org/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz"
         wget https://dlcdn.apache.org/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/bin/apache-tomcat-${TC_VERSION}.tar.gz
         if [ $? -ne 0 ]; then
-          echo "Can't find tomcat: ${TC_VERSION}"
+          echo "Can't download tomcat: ${TC_VERSION} ${TC_MAJOR}"
           exit 1
         fi
       fi
@@ -326,7 +326,8 @@ wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERS
 if [ $? -ne 0 ]; then
     wget http://mirror.easyname.ch/apache/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
     if [ $? -ne 0 ]; then
-      echo "Can't find tomcat: ${TC_VERSION}"
+      echo "Can't download tomcat sources: ${TC_VERSION} ${TC_MAJOR}"
+      echo "Tried: https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz"
       exit 1
     fi
 fi
