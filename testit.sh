@@ -1,10 +1,10 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 #VERSION=1.2.39
 VERSION=1.3.1
-#VERSION=2.0.7
-#TC_VERSION=10.1.26
+#VERSION=2.0.8
+#TC_VERSION=10.1.39
 #TC_VERSION=11.0.0-M22
-TC_VERSION=9.0.95
+TC_VERSION=9.0.103
 #TC_VERSION=8.5.70
 
 TC_MAJOR=`echo "$TC_VERSION"  | awk -F '.' '{print $1}'`
@@ -111,14 +111,17 @@ fi
 function buildnative
 {
   rm -rf tomcat-native-${VERSION}-src
-  rm -f tomcat-native-*
-  wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
-  if [ $? -ne 0 ]; then
-      wget http://mirror.easyname.ch/apache/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
-      if [ $? -ne 0 ]; then
-        echo "Can't find tomcat-native: ${VERSION}"
-        exit 1
-      fi 
+  if [ -f tomcat-native-${VERSION}-src.tar.gz ]; then
+    echo "Checking tomcat-native-${VERSION}-src.tar.gz"
+  else
+    wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+    if [ $? -ne 0 ]; then
+        wget http://mirror.easyname.ch/apache/tomcat/tomcat-connectors/native/${VERSION}/source/tomcat-native-${VERSION}-src.tar.gz
+        if [ $? -ne 0 ]; then
+          echo "Can't find tomcat-native: ${VERSION}"
+          exit 1
+        fi 
+    fi
   fi
   tar xvf tomcat-native-${VERSION}-src.tar.gz
   (cd tomcat-native-${VERSION}-src/native
@@ -320,16 +323,23 @@ then
   exit 1
 fi
 
+# basic tests done (stop tomcat)
+apache-tomcat-${TC_VERSION}/bin/shutdown.sh
+
 # now testing the sources...
 rm -rf apache-tomcat-${TC_VERSION}-src
-wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
-if [ $? -ne 0 ]; then
-    wget http://mirror.easyname.ch/apache/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
-    if [ $? -ne 0 ]; then
-      echo "Can't download tomcat sources: ${TC_VERSION} ${TC_MAJOR}"
-      echo "Tried: https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz"
-      exit 1
-    fi
+if [ -f apache-tomcat-${TC_VERSION}-src.tar.gz ]; then
+  echo "Testing apache-tomcat-${TC_VERSION}-src.tar.gz"
+else
+  wget https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+  if [ $? -ne 0 ]; then
+      wget http://mirror.easyname.ch/apache/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz
+      if [ $? -ne 0 ]; then
+        echo "Can't download tomcat sources: ${TC_VERSION} ${TC_MAJOR}"
+        echo "Tried: https://dist.apache.org/repos/dist/dev/tomcat/tomcat-${TC_MAJOR}/v${TC_VERSION}/src/apache-tomcat-${TC_VERSION}-src.tar.gz"
+        exit 1
+      fi
+  fi
 fi
 tar xvf apache-tomcat-${TC_VERSION}-src.tar.gz
 (cd apache-tomcat-${TC_VERSION}-src
