@@ -1,7 +1,7 @@
 #VERSION=/opt/rh/jws5/root/usr/lib64
 #VERSION=1.2.39
-VERSION=1.3.1
-#VERSION=2.0.9
+#VERSION=1.3.1
+VERSION=2.0.9
 #TC_VERSION=10.1.50
 #TC_VERSION=11.0.15
 TC_VERSION=9.0.113
@@ -22,7 +22,7 @@ ANT_HOME=/home/jfclere/apache-ant-1.10.11
 #PATH=/usr/lib/jvm/java-1.8.0/bin:$PATH
 # find java_home (looking for alternatives)
 # 2022/01/20  openjdk version "11.0.13" 2021-10-19
-#JAVA_VERSION=8
+JAVA_VERSION=`java -XshowSettings:all -version 2>&1 | grep java.vm.specification.version | awk ' { print $3 } '`
 JAVA=`which java`
 JAVA=`ls -l ${JAVA} | awk '{ print $11 }'`
 echo $JAVA | grep alternatives
@@ -105,6 +105,7 @@ if [ -d apache-tomcat-${TC_VERSION} ]
 then
   apache-tomcat-${TC_VERSION}/bin/shutdown.sh
   sleep 10
+  rm -rf apache-tomcat-${TC_VERSION}
 fi
 
 # build tomcat-native is required.
@@ -238,6 +239,14 @@ if [ $TC_MAJOR == 9 ]; then
         \</SSLHostConfig\>\
     \</Connector\>\
 ' apache-tomcat-${TC_VERSION}/conf/server.xml
+  case $VERSION in
+    1.*)
+      echo "Good for APR testing"
+      ;;
+    2.0.*)
+      echo "NOT Good for APR testing"
+      sed -i 's/Http11AprProtocol/Http11Nio2Protocol/g' apache-tomcat-${TC_VERSION}/conf/server.xml
+  esac
 else
   echo "Tomcat 10.1 or 11"
   if ${USE_PANAMA}; then
@@ -273,7 +282,7 @@ cp newkey.pem apache-tomcat-${TC_VERSION}/conf/newkey.pem
 cp newcert.pem apache-tomcat-${TC_VERSION}/conf/newcert.pem
 
 apache-tomcat-${TC_VERSION}/bin/startup.sh
-sleep 10
+sleep 20
 
 # check 8080 (tomcat started?)
 curl -v  http://localhost:8080/toto
@@ -390,6 +399,15 @@ opens.javautil=-Dnop
 opens.javautilconcurrent=-Dnop 
 EOF
 fi
+# skip apr test for 9.x and 2.0.x
+if [ $TC_MAJOR == 9 ]; then
+  case $VERSION in
+    2.0.*)
+      echo "NOT Good for APR testing"
+      sed -i "/execute.test.apr=/cexecute.test.apr=false"  build.properties.default
+      ;;
+  esac
+fi
 ${ANT_HOME}/bin/ant test
 if [ $? -ne 0 ]; then
   echo "Test failed"
@@ -399,3 +417,10 @@ fi
 
 echo ""
 echo "DONE: All OK"
+if [ $TC_MAJOR == 9 ]; then
+  case $VERSION in
+    2.0.*)
+      echo "NOT Good for APR testing"
+      ;;
+  esac
+fi
